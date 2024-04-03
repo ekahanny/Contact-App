@@ -1,19 +1,20 @@
-// Menginisiasi Module
+// contacts.js
+
 const fs = require("fs");
 const readline = require("readline");
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-// Membuat folder baru (jika belum ada)
 const directory = "./data";
+const dataPath = "./data/contacts.json";
+
 if (!fs.existsSync(directory)) {
   fs.mkdirSync(directory);
 }
 
-// Membuat file contact.json (jika belum ada)
-const dataPath = "./data/contacts.json";
 if (!fs.existsSync(dataPath)) {
   fs.writeFileSync(dataPath, "[]", "utf-8");
 }
@@ -27,15 +28,34 @@ const addContacts = (contact) => {
 };
 
 const saveContacts = (nama, noHP, alamat) => {
-  // Memasukkan inputan user ke file contact.json
   const contact = { nama, noHP, alamat };
-  const file = fs.readFileSync("data/contacts.json", "utf8");
+  const file = fs.readFileSync(dataPath, "utf8");
   const contacts = JSON.parse(file);
   contacts.push(contact);
-  fs.writeFileSync("data/contacts.json", JSON.stringify(contacts));
-
-  console.log("Data Telah Ditambahkan");
+  fs.writeFileSync(dataPath, JSON.stringify(contacts));
+  console.log("Data telah ditambahkan.");
   rl.close();
 };
 
-module.exports = { addContacts, saveContacts };
+const deleteContact = async (searchKey) => {
+  const file = fs.readFileSync(dataPath, "utf8");
+  let contacts = JSON.parse(file);
+
+  const index = contacts.findIndex(
+    (contact) =>
+      contact.nama.toLowerCase() === searchKey.toLowerCase() ||
+      contact.noHP === searchKey
+  );
+
+  if (index !== -1) {
+    const deletedContact = contacts.splice(index, 1)[0];
+    fs.writeFileSync(dataPath, JSON.stringify(contacts));
+    console.log(`Kontak ${deletedContact.nama} telah dihapus.`);
+  } else {
+    console.log(`Kontak dengan nama atau nomor ${searchKey} tidak ditemukan.`);
+  }
+
+  rl.close();
+};
+
+module.exports = { addContacts, saveContacts, deleteContact };
